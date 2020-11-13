@@ -5,6 +5,9 @@ const YAML = require('yamljs');
 const userRouter = require('./resources/users/user.router');
 const boardRouter = require('./resources/boards/board.router');
 const taskRouter = require('./resources/tasks/task.router');
+const reqLogMiddleware = require('./middlewares/reqLogMiddleware');
+const errorHandlerMiddleware = require('./middlewares/errorHandlerMiddleware');
+const logger = require('./logger');
 
 const app = express();
 const swaggerDocument = YAML.load(path.join(__dirname, '../doc/api.yaml'));
@@ -29,10 +32,19 @@ app.use('/boards', boardRouter);
 
 boardRouter.use('/:boardId/tasks', taskRouter);
 
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
-  next();
-});
+app.use(reqLogMiddleware);
+
+app.use(errorHandlerMiddleware);
+
+process
+  .on('uncaughtException', err => {
+    logger.error(`Uncaught Exception: ${err.message}`);
+  })
+  .on('unhandledRejection', err => {
+    logger.error(`Unhandle Rejection: ${err.message}`);
+  });
+
+// throw Error('Oops!');
+// Promise.reject(Error('Oops!'));
 
 module.exports = app;
