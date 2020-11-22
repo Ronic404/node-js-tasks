@@ -9,7 +9,7 @@ router.route('/').get(async (req, res) => {
 
 router.route('/:id').get(async (req, res) => {
   try {
-    const user = await usersService.get(req.params.id);
+    const user = await usersService.getById(req.params.id);
     await res.json(User.toResponse(user));
   } catch (e) {
     res.status(404).send(e.message);
@@ -17,7 +17,7 @@ router.route('/:id').get(async (req, res) => {
 });
 
 router.route('/').post(async (req, res) => {
-  const user = await usersService.create(
+  const user = await usersService.add(
     new User({
       login: req.body.login,
       password: req.body.password,
@@ -30,11 +30,11 @@ router.route('/').post(async (req, res) => {
 router.route('/:id').put(async (req, res) => {
   try {
     const user = await usersService.update(
-      req.params.id,
       new User({
         login: req.body.login,
         password: req.body.password,
-        name: req.body.name
+        name: req.body.name,
+        _id: req.params.id
       })
     );
     await res.json(User.toResponse(user));
@@ -45,7 +45,7 @@ router.route('/:id').put(async (req, res) => {
 
 router.route('/:id').delete(async (req, res) => {
   try {
-    await usersService.remove(req.params.id);
+    await usersService.deleteById(req.params.id);
     res.status(204).send('User has been deleted');
   } catch (e) {
     res.status(404).send(e.message);
